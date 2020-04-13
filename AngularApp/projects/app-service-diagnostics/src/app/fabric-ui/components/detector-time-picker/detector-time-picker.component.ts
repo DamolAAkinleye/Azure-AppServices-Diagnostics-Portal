@@ -183,7 +183,6 @@ export class DetectorTimePickerComponent implements OnInit {
     this.timeDiffError = this.detectorControlService.getTimeDurationError(startDateWithTime, endDateWithTime);
     if (this.timeDiffError === '') {
       this.detectorControlService.setCustomStartEnd(startDateWithTime, endDateWithTime);
-
       this.globals.updateTimePickerInfo(timePickerInfo);
     }
     this.globals.openTimePicker = this.timeDiffError !== "";

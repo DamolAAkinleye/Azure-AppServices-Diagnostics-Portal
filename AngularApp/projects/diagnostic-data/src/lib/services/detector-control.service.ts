@@ -205,7 +205,7 @@ export class DetectorControlService {
     if (this.getTimeDurationError(start, end) === '') {
       this._startTime = startTime;
       this._endTime = endTime;
-      this._refreshData();
+      this._refreshData("V3ControlRefresh");
     }
     else {
       this.timeRangeDefaulted = true;
@@ -239,7 +239,7 @@ export class DetectorControlService {
           this._startTime = this._endTime.clone().subtract(1, 'days');
         }
       }
-      this._refreshData();
+      this._refreshData("V3ControlRefresh");
     }
   }
 

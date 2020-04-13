@@ -53,6 +53,10 @@ export class DetectorControlComponent implements OnInit {
       this.detectorControlService.setCustomStartEnd(this.startTime, this.endTime);
     }
   }
+
+  refreshPage() {
+    this.detectorControlService.refresh("V3ControlRefresh");
+  }
 }
 
 @Pipe({
