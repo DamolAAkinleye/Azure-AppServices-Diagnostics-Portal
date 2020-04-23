@@ -54,6 +54,8 @@ export class DetectorControlService {
 
   private detectorQueryParams: BehaviorSubject<string> = new BehaviorSubject<string>("");
 
+  public _refreshInstanceId: BehaviorSubject<string> = new BehaviorSubject<string>("");
+
   public DetectorQueryParams = this.detectorQueryParams.asObservable();
 
   public timeRangeDefaulted: boolean = false;
@@ -203,7 +205,7 @@ export class DetectorControlService {
     if (this.getTimeDurationError(start, end) === '') {
       this._startTime = startTime;
       this._endTime = endTime;
-      this._refreshData();
+      this._refreshData("V3ControlRefresh");
     }
     else {
       this.timeRangeDefaulted = true;
@@ -237,7 +239,7 @@ export class DetectorControlService {
           this._startTime = this._endTime.clone().subtract(1, 'days');
         }
       }
-      this._refreshData();
+      this._refreshData("V3ControlRefresh");
     }
   }
 
@@ -260,8 +262,8 @@ export class DetectorControlService {
     this.setCustomStartEnd(this._startTime.format(this.stringFormat), this.endTime.format(this.stringFormat));
   }
 
-  public refresh() {
-    this._duration ? this.selectDuration(this._duration) : this._refreshData();
+  public refresh(instanceId: string="") {
+    this._duration ? this.selectDuration(this._duration) : this._refreshData(instanceId);
   }
 
   public toggleInternalExternal() {
@@ -273,9 +275,10 @@ export class DetectorControlService {
     this.detectorQueryParams.next(detectorQueryParams);
   }
 
-  private _refreshData() {
+  private _refreshData(instanceId: string="") {
     this._shouldRefresh = true;
     this._refresh.next(true);
+    this._refreshInstanceId.next(instanceId);
   }
 
   public get error(): string {

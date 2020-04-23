@@ -11,19 +11,22 @@ import { CategoryService } from '../../shared-v2/services/category.service';
 import { PortalActionService } from '../../shared/services/portal-action.service';
 import { StartupInfo } from '../../shared/models/portal';
 import { VersionTestService } from '../../fabric-ui/version-test.service';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { filter } from 'rxjs-compat/operator/filter';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class FeatureService {
 
   private _detectors: DetectorMetaData[];
-
   protected _features: Feature[] = [];
   protected _featureDisplayOrder = [];
   private categories: Category[] = [];
+  private _featureSub:BehaviorSubject<Feature[]> = new BehaviorSubject<Feature[]>([]);
   protected isLegacy:boolean;
   constructor(protected _diagnosticApiService: DiagnosticService, protected _contentService: ContentService, protected _router: Router, protected _authService: AuthService,
     protected _logger: LoggingV2Service, protected _siteService: SiteService, protected _categoryService: CategoryService, protected _activatedRoute: ActivatedRoute,protected _portalActionService:PortalActionService,protected versionTestService:VersionTestService) {
-    this.versionTestService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy)
+    this.versionTestService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy);
     this._categoryService.categories.subscribe(categories => this.categories = categories);
     this._authService.getStartupInfo().subscribe(startupInfo => {
       this._diagnosticApiService.getDetectors().subscribe(detectors => {
@@ -31,7 +34,6 @@ export class FeatureService {
         detectors.forEach(detector => {
           if ((detector.category && detector.category.length > 0) ||
             (detector.description && detector.description.length > 0)) {
-            const categoryId = this.getCategoryIdByCategoryName(detector.category);
             if (detector.type === DetectorType.Detector) {
               this._features.push(<Feature>{
                 id: detector.id,
@@ -44,6 +46,7 @@ export class FeatureService {
                   if (this.isLegacy) {
                     this._router.navigateByUrl(`resource${startupInfo.resourceId}/detectors/${detector.id}`);
                   } else {
+                    const categoryId = this.getCategoryIdByCategoryName(detector.category);
                     this.navigatTo(startupInfo,categoryId,detector.id,DetectorType.Detector);
                   }
                 })
@@ -59,6 +62,7 @@ export class FeatureService {
                   if (this.isLegacy) {
                     this._router.navigateByUrl(`resource${startupInfo.resourceId}/analysis/${detector.id}`);
                   } else {
+                    const categoryId = this.getCategoryIdByCategoryName(detector.category);
                     this.navigatTo(startupInfo,categoryId,detector.id,DetectorType.Analysis);
                   }
                 })
@@ -67,6 +71,7 @@ export class FeatureService {
           }
         });
         this.sortFeatures();
+        this._featureSub.next(this._features);
       });
 
       this._contentService.getContent().subscribe(articles => {
@@ -100,13 +105,26 @@ export class FeatureService {
     return this._features.filter(feature => feature.category === category.name);
   }
 
+  getFeaturesForCategorySub(category:Category):Observable<Feature[]> {
+    this._featureSub.subscribe(fea => console.log("feature service",fea));
+    return this._featureSub.pipe(
+      map(features => this.getFeaturesForCategory(category)
+    ));
+  }
+
   getFeatures(searchValue?: string) {
+    const featureUnique = this._features.filter((feature,index,array) => 
+    {
+        return array.findIndex(fea =>feature.name === fea.name) === index; 
+    })
+    
     if (!searchValue || searchValue === '') {
-      return this._features;
+      // return this._features;
+      return featureUnique;
     }
 
     searchValue = searchValue.toLowerCase();
-    return this._features.filter(feature => {
+    return featureUnique.filter(feature => {
       //Remove after A/B Test
       if (this.isLegacy) {
         return feature.name.toLowerCase().indexOf(searchValue) != -1
@@ -116,7 +134,6 @@ export class FeatureService {
         return feature.name.toLowerCase().indexOf(searchValue) != -1
         || (feature.category && feature.category.toLowerCase().indexOf(searchValue) != -1);
       }
-      
     });
   }
   getCategoryIdByhDetectorId(detectorId: string): string {

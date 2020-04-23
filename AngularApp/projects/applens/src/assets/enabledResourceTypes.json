@@ -295,6 +295,17 @@
             "pesId": "16123",
             "staticSelfHelpContent": "Microsoft.Relay",
             "searchSuffix": "AZURE RELAY"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.SignalRService/SignalR",
+            "templateFileName": "SignalRService",
+            "imgSrc": "assets/img/Azure-SignalRService-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "SignalRService",
+            "pesId": "",
+            "staticSelfHelpContent": "",
+            "searchSuffix": "AZURE SIGNAL SERVICE"
         }
     ]
 }

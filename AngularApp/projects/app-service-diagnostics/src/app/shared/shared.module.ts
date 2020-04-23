@@ -158,7 +158,7 @@ import { ConfigureStorageAccountComponent } from './components/daas/configure-st
         EventViewerComponent,
         FrebViewerComponent,
         PortalReferrerResolverComponent,
-        ConfigureStorageAccountComponent,
+        ConfigureStorageAccountComponent
     ],
     imports: [
         HttpClientModule,

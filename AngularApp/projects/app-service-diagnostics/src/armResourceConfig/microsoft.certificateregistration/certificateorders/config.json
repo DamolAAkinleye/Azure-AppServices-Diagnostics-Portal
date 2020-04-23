@@ -1,0 +1,18 @@
+{
+	"homePageText": {
+		"title": "App Service Certificates Diagnostics",
+		"description": "Use App Service Certificates Diagnostics to investigate how your service is performing, diagnose issues, and discover how to improve its reliability. Select the problem category that best matches the information or tool that you're interested in:",
+		"searchBarPlaceHolder": "Search App Service Certificates Diagnostics"
+	},
+	"matchRegEx": "/Microsoft.CertificateRegistration/certificateOrders/",
+	"searchSuffix": "certs",
+	"azureServiceName": "App Service Certificates",
+	"armApiVersion": "2018-06-01-preview",
+	"isSearchEnabled": true,
+	"liveChatConfig": {
+		"isApplicableForLiveChat": false,
+		"supportTopicIds": []
+	},
+	"categories": [],
+	"pesId": "16512"
+}

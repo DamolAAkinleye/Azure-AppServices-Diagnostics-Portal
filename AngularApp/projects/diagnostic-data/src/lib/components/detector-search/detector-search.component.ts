@@ -38,7 +38,7 @@ import { GenericResourceService } from '../../services/generic-resource-service'
     ]
 })
 export class DetectorSearchComponent extends DataRenderBaseComponent implements OnInit {
-    detectorSearchEnabledPesIds: string[] = ["14748"];
+    detectorSearchEnabledPesIds: string[] = ["14748", "16072", "16170"];
     startTime: Moment;
     endTime: Moment;
     isPublic: boolean = false;

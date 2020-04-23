@@ -56,7 +56,7 @@ export class DiagnosticsSettingsComponent implements OnInit, OnDestroy {
         private loggingService: PortalKustoTelemetryService) { }
 
     ngOnInit() {
-        this.subscriptionId = this.activatedRoute.snapshot.params['subscriptionid'];
+        this.subscriptionId = this.activatedRoute.snapshot.params['subscriptionid'] != null ? this.activatedRoute.snapshot.params['subscriptionid']: this.activatedRoute.parent.snapshot.params['subscriptionid'];
         this.authService.getStartupInfo().subscribe(data => {
             this.resourceId = data.resourceId;
         });

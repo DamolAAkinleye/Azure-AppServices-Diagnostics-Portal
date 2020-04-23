@@ -71,6 +71,23 @@ $zIndex:99;
     bottom:5.2em;    
 }
 
+.cxpChat-CloseIconBackground {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 5px;
+    padding-top: 5px;
+}
+
+.cxpChat-CloseIcon {
+    cursor: pointer;
+    color:darkred;
+    background: radial-gradient(#DBDBDB 50%, transparent 50%);
+    background: -webkit-gradient(#DBDBDB 50%, transparent 50%);
+    background: -webkit-radial-gradient(#DBDBDB 50%, transparent 50%);
+    background: -moz-radial-gradient(#DBDBDB 50%, transparent 50%);
+    background: -o-radial-gradient(#DBDBDB 50%, transparent 50%);
+    background: -ms-radial-gradient(#DBDBDB 50%, transparent 50%);
+}
 
 .cxpChat-ConfText {
     padding-top: 18px;
@@ -80,6 +97,26 @@ $zIndex:99;
     width: 30em;  
 }
 
+.cxpChat-ConsentContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.cxpChat-ConsentOptionContainer {
+    display: flex;
+}
+
+.cxpChat-ConsentText {
+    padding-left: .2em;
+}
+
+label {
+    color: white;
+}
+
+a {
+    color: skyblue;
+}
 
 .cxpChat-actionBtnContainer {
     display: flex;

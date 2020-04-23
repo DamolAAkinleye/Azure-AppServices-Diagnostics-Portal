@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { flatMap } from 'rxjs/operators';
-import { Observable, ReplaySubject, generate, of} from 'rxjs';
+import { Observable, ReplaySubject, of} from 'rxjs';
 import { PortalService } from '../../startup/services/portal.service';
 import { ResourceService } from './resource.service' ;
 import { Verbs } from '../../shared/models/portal'
 import { Guid } from '../../shared/utilities/guid';
 import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
+import { AuthService } from '../../startup/services/auth.service';
 
 @Injectable()
 export class CXPChatCallerService {
@@ -16,15 +17,28 @@ export class CXPChatCallerService {
   public readonly applensUserAgentForCXPChat: string = 'applensDiagnostics';
   public readonly supportPlanType: string = 'Basic';
   public chatLanguage: string = 'en';
+
+  public trackingId:string = '';
+  public chatUrl:string = '';
+  public caseSubject : string = '';
   
   
 
-  constructor(private _portalService: PortalService, private _telemetryService: TelemetryService, private _resourceService?: ResourceService) {
+  constructor(private _authService: AuthService, private _portalService: PortalService, private _telemetryService: TelemetryService, private _resourceService?: ResourceService) {
     this.isChatSupported = this._resourceService.isApplicableForLiveChat;
     if (this.isChatSupported) {
       this.supportedSupportTopicIds = this._resourceService.liveChatEnabledSupportTopicIds;
     }
 
+    this._authService.getStartupInfo()
+      .subscribe(startupInfo => {
+        if (!!startupInfo && !!startupInfo.optionalParameters) {
+          var caseSubjectParam = startupInfo.optionalParameters.find(param => param.key === "caseSubject");
+          if (caseSubjectParam) {
+            this.caseSubject = caseSubjectParam.value;
+          }
+        }
+      });
 
     this._resourceService.getPesId().subscribe(pesId => {
       this.pesId = pesId;
@@ -122,35 +136,47 @@ export class CXPChatCallerService {
       additionalInfo: {}
     };
 
-    this._portalService.postMessage(Verbs.buildChatUrl, JSON.stringify(input));
-
-
-    //Wait for the response from the CXP chat API call.
-    return this._portalService.buildChatUrl().pipe(flatMap((chatUrl) => {
-      let stringToLog = '';
-      let returnValue = '';
-      if (chatUrl && chatUrl != '') {
-        stringToLog = chatUrl;
-        returnValue = chatUrl;
-      }
-      else {
-        if (chatUrl === '') {
-          stringToLog = 'Empty URL returned. Likely cause, no engineer available.';
-        }
-        else {
-          stringToLog = 'NULL object returned. Likely cause, unknown. Followup with CXP team with trackingId.';
-        }
-      }
-
+    if(this.chatUrl.length > 0 && this.trackingId.length > 0) {
+      let stringToLog = `No call made, result from service cache. ChatUrl: ${this.chatUrl}`;
       this._telemetryService.logEvent(TelemetryEventNames.BuildCXPChatUrl, {
-        "cxpChatTrackingId": trackingIdGuid,
+        "cxpChatTrackingId": this.trackingId,
         "passedInput": JSON.stringify(input),
         "returnValue": stringToLog
       });
-      return of(returnValue);
 
-    }));
+      return of(this.chatUrl);
+    }
+    else {
+      this._portalService.postMessage(Verbs.buildChatUrl, JSON.stringify(input));
 
+      //Wait for the response from the CXP chat API call.
+      return this._portalService.buildChatUrl().pipe(flatMap((chatUrl) => {
+        let stringToLog = '';
+        let returnValue = '';
+        if (chatUrl && chatUrl != '') {
+          this.chatUrl = chatUrl;
+          this.trackingId = trackingIdGuid;
+          stringToLog = chatUrl;
+          returnValue = chatUrl;
+        }
+        else {
+          if (chatUrl === '') {
+            stringToLog = 'Empty URL returned. Likely cause, no engineer available.';
+          }
+          else {
+            stringToLog = 'NULL object returned. Likely cause, unknown. Followup with CXP team with trackingId.';
+          }
+        }
+
+        this._telemetryService.logEvent(TelemetryEventNames.BuildCXPChatUrl, {
+          "cxpChatTrackingId": trackingIdGuid,
+          "passedInput": JSON.stringify(input),
+          "returnValue": stringToLog
+        });
+        return of(returnValue);
+
+      }));
+    }
   }
 
 
@@ -173,66 +199,89 @@ export class CXPChatCallerService {
         subscriptionId: this._resourceService.subscriptionId
       },
       callerName: this.applensUserAgentForCXPChat,
-      trackingId: trackingIdGuid
+      trackingId: trackingIdGuid,
+      createTicket: true,
+      ticketInformation: {
+        subscriptionId: this._resourceService.subscriptionId,
+        productId: this.pesId,
+        supportTopicId: supportTopicId,
+        title: this.caseSubject
+      }
     };
 
-    this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
-      "cxpChatTrackingId": trackingIdGuid,
-      "passedInput": JSON.stringify(input),
-      "returnValue": 'About to make a call to CXP chat portal RPC API.'
-    });
-
-    //Make a call to the CXP Chat API to get the URL, the call is piped via SCI Frame blade in the portal.
-    try {
-      this._portalService.postMessage(Verbs.getChatUrl, JSON.stringify(input));
-
-      this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
-        "cxpChatTrackingId": trackingIdGuid,
+    if(this.chatUrl.length > 0 && this.trackingId.length > 0) {
+      let stringToLog = `No call made, result from service cache. ChatUrl: ${this.chatUrl}`;
+      this._telemetryService.logEvent(TelemetryEventNames.BuildCXPChatUrl, {
+        "cxpChatTrackingId": this.trackingId,
         "passedInput": JSON.stringify(input),
-        "returnValue": 'Made a call to CXP chat portal RPC API. Waiting on response...'
+        "returnValue": stringToLog
       });
-    } catch (error) {
-      this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
-        "cxpChatTrackingId": trackingIdGuid,
-        "passedInput": JSON.stringify(input),
-        "returnValue": `Error while sending a call to CXP chat portal RPC API. ${JSON.stringify(error)}`
-      });
+
+      return of(this.chatUrl);
     }
-    
-    //Wait for the response from the CXP chat API call.
-    try {
-      return this._portalService.getChatUrl().pipe(flatMap((chatUrl) => {
-        let stringToLog = '';
-        let returnValue = '';
-        if (chatUrl && chatUrl != '') {
-          stringToLog = chatUrl;
-          returnValue = chatUrl;
-        }
-        else {
-          if (chatUrl === '') {
-            stringToLog = 'Empty URL returned. Likely cause, no engineer available.';
-          }
-          else {
-            stringToLog = 'NULL object returned. Likely cause, unknown. Followup with CXP team with trackingId.';
-          }
-        }
-  
+    else {
+      
+      //Make a call to the CXP Chat API to get the URL, the call is piped via SCI Frame blade in the portal.
+      try {
         this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
           "cxpChatTrackingId": trackingIdGuid,
           "passedInput": JSON.stringify(input),
-          "returnValue": stringToLog
+          "returnValue": 'About to make a call to CXP chat portal RPC API.'
         });
-        return of(returnValue);
-      }));      
-    } catch (error) {
-      this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
-        "cxpChatTrackingId": trackingIdGuid,
-        "passedInput": JSON.stringify(input),
-        "returnValue": `Error in Chat portal RPC API response. ${JSON.stringify(error)}`
-      });
-      return of('');
-    }
 
+        this._portalService.postMessage(Verbs.getChatUrl, JSON.stringify(input));
+
+        this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
+          "cxpChatTrackingId": trackingIdGuid,
+          "passedInput": JSON.stringify(input),
+          "returnValue": 'Made a call to CXP chat portal RPC API. Waiting on response...'
+        });
+      } catch (error) {
+        this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
+          "cxpChatTrackingId": trackingIdGuid,
+          "passedInput": JSON.stringify(input),
+          "returnValue": `Error while sending a call to CXP chat portal RPC API. ${JSON.stringify(error)}`
+        });
+      }
+      
+      //Wait for the response from the CXP chat API call.
+      try {
+        return this._portalService.getChatUrl().pipe(flatMap((chatUrl) => {
+          let stringToLog = '';
+          let returnValue = '';
+          
+          if (chatUrl && chatUrl != '') {
+            this.chatUrl = chatUrl;
+            this.trackingId = trackingIdGuid;
+            stringToLog = chatUrl;
+            returnValue = chatUrl;
+          }
+          else {
+            if (chatUrl === '') {
+              stringToLog = 'Empty URL returned. Likely cause, no engineer available.';
+            }
+            else {
+              stringToLog = 'NULL object returned. Likely cause, unknown. Followup with CXP team with trackingId.';
+            }
+          }
+    
+          this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
+            "cxpChatTrackingId": trackingIdGuid,
+            "passedInput": JSON.stringify(input),
+            "returnValue": stringToLog
+          });
+          return of(returnValue);
+        }));      
+      } catch (error) {
+        this._telemetryService.logEvent(TelemetryEventNames.GetCXPChatURL, {
+          "cxpChatTrackingId": trackingIdGuid,
+          "passedInput": JSON.stringify(input),
+          "returnValue": `Error in Chat portal RPC API response. ${JSON.stringify(error)}`
+        });
+        return of('');
+      }
+
+    }
   }
 
 
