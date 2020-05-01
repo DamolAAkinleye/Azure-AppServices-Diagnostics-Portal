@@ -1,43 +1,81 @@
 import { Injectable, OnInit, Inject, Input } from '@angular/core';
-import { AppInsights, } from 'applicationinsights-js';
+import { ApplicationInsights, Snippet, IPageViewTelemetry, IEventTelemetry, IExceptionTelemetry, SeverityLevel, ITraceTelemetry, IMetricTelemetry } from '@microsoft/applicationinsights-web'
 import { ITelemetryProvider } from './telemetry.common';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
-import { SeverityLevel } from '../../models/telemetry';
 
 @Injectable()
 export class AppInsightsTelemetryService implements ITelemetryProvider {
 
+    appInsights: ApplicationInsights;
     constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig) {
-        if (!AppInsights.config) {
-            AppInsights.downloadAndSetup({
-                instrumentationKey: config.InstrumentationKey,
-                maxBatchSizeInBytes: 1,
-                maxBatchInterval: 1
-            });
-        }
+        const snippet: Snippet = {
+            config: {
+              instrumentationKey: config.InstrumentationKey,
+              disableFetchTracking: false,
+              maxAjaxCallsPerView: -1,
+              enableAutoRouteTracking: true,
+              maxBatchSizeInBytes: 5,
+              maxBatchInterval: 1,
+            }
+          };
+          
+        this.appInsights = new ApplicationInsights(snippet);
+        this.appInsights.loadAppInsights();
     }
 
-    public logPageView(name?: string, url?: string, properties?: any, measurements?: any, duration?: number) {
-        AppInsights.trackPageView(name, url, properties, measurements, duration);
+    public logPageView(name?: string, url?: string, properties?: any, duration?: number) {  
+        properties = properties || {};
+        properties.duration = duration === undefined || duration === null ? 0 : duration;
+
+        const pageViewTelemetry: IPageViewTelemetry = {
+            name: name,
+            uri: url,
+            properties: properties,
+          };
+        this.appInsights .trackPageView(pageViewTelemetry);
     }
 
     public logEvent(message?: string, properties?: any, measurements?: any) {
-        AppInsights.trackEvent(message, properties, measurements);
+        const mergedProperties = {...properties, ... measurements};
+        const eventTelemetry: IEventTelemetry = {
+            name: message,
+            properties: mergedProperties
+        };
+        
+        if (this.appInsights) {
+            this.appInsights.trackEvent(eventTelemetry);
+        }
     }
 
-    public logException(exception: Error, handledAt?: string, properties?: any, measurements?: any, severityLevel?: SeverityLevel) {
-        AppInsights.trackException(exception, handledAt, properties, measurements, severityLevel);
+    public logException(exception: Error, handledAt?: string, properties?: any, severityLevel?: SeverityLevel) {
+        const mergedProperties = { handledAt: handledAt, ...properties};
+        const exceptionTelemetry = { exception, severityLevel, mergedProperties } as IExceptionTelemetry;
+
+
+        if (this.appInsights) {
+        this.appInsights.trackException(exceptionTelemetry);
+        }
     }
 
-    public logTrace(message: string, customProperties?: any, customMetrics?: any) {
-        AppInsights.trackTrace(message, customProperties);
+    public logTrace(message: string, properties?: any, severityLevel?: SeverityLevel) {
+        severityLevel = severityLevel == undefined || severityLevel == null ? SeverityLevel.Information : severityLevel;
+        const traceTelemetry = { message, severityLevel: severityLevel,  properties: properties} as ITraceTelemetry;
+
+        if (this.appInsights) {
+            this.appInsights.trackTrace(traceTelemetry);
+        }
     }
 
     public logMetric(name: string, average: number, sampleCount?: number, min?: number, max?: number, properties?: any) {
-        AppInsights.trackMetric(name, average, sampleCount, min, max, properties);
+        const metricTelemetry = { name, average, sampleCount, min, max, properties} as IMetricTelemetry;
+        if (this.appInsights) {
+            this.appInsights.trackMetric(metricTelemetry);
+        } 
     }
 
     public flush() {
-        AppInsights.flush();
+        if (this.appInsights) {
+            this.appInsights.flush();
+        }
     }
 }

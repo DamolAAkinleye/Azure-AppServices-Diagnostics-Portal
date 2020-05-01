@@ -61,15 +61,15 @@ export class TelemetryService {
         }
     }
 
-    public logException(exception: Error, handledAt?: string, properties?: any, measurements?: any, severityLevel?: SeverityLevel) {
+    public logException(exception: Error, handledAt?: string, properties?: any, severityLevel?: SeverityLevel) {
         for (const telemetryProvider of this.telemetryProviders) {
-            telemetryProvider.logException(exception, handledAt, properties, measurements, severityLevel);
+            telemetryProvider.logException(exception, handledAt, properties, severityLevel);
         }
     }
 
-    public logTrace(message: string, customProperties?: any, customMetrics?: any) {
+    public logTrace(message: string, properties?: any, severityLevel?: any) {
         for (const telemetryProvider of this.telemetryProviders) {
-            telemetryProvider.logTrace(message, customProperties);
+            telemetryProvider.logTrace(message, properties, severityLevel);
         }
     }
 

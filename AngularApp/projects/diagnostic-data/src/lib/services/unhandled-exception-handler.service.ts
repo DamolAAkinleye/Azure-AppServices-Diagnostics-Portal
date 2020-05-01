@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { SeverityLevel } from '../models/telemetry';
-import { KustoTelemetryService } from './telemetry/kusto-telemetry.service';
+import { TelemetryService } from './telemetry/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ export class UnhandledExceptionHandlerService {
 
     router: Router;
 
-    constructor(private logService: KustoTelemetryService, private injector: Injector) { }
+    constructor(private logService: TelemetryService, private injector: Injector) { }
 
     handleError(error: Error) {
         try {
@@ -26,7 +26,7 @@ export class UnhandledExceptionHandlerService {
                 props['stack'] = error.stack;
             }
 
-            this.logService.logException(error, "unhandled", props, null, SeverityLevel.Critical);
+            this.logService.logException(error, "unhandled", props, SeverityLevel.Critical);
         }
         catch (err) {
             // Squash logging error
