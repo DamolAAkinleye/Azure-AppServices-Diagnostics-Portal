@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -14,10 +15,12 @@ namespace Backend.Controllers
     public class AppSettingsController : Controller
     {
         private IConfiguration config;
+        private IHostingEnvironment env;
 
-        public AppSettingsController(IConfiguration configuration)
+        public AppSettingsController(IConfiguration configuration, IHostingEnvironment env)
         {
             this.config = configuration;
+            this.env = env;
         }
 
         [HttpGet("{name}")]
@@ -29,6 +32,35 @@ namespace Backend.Controllers
             }
 
             return Ok(config[name]);
+        }
+
+        [HttpGet("environmentVariable/{name}")]
+        public IActionResult GetEnvironmentVariable(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return BadRequest("Environment variable name is empty");
+            }
+
+            return Ok(Environment.GetEnvironmentVariable(name));
+        }
+
+        [HttpGet("environment/configurations")]
+        public IActionResult GetEnvironmentConfiguration()
+        {
+            IDictionary<string, string> environmentConfiguration = new Dictionary<string, string>
+            {
+                { "environment", Environment.GetEnvironmentVariable("ADS_ENVIRONMENT") },
+                { "websiteHostName",  Environment.GetEnvironmentVariable("ADS_HOST") }
+            };
+
+            if (env.IsDevelopment())
+            {
+                environmentConfiguration["environment"] = "local";
+                environmentConfiguration["websiteHostName"] = "ads";
+            }
+
+            return Ok(environmentConfiguration);
         }
     }
 }

@@ -12,6 +12,9 @@ import {
   KustoTelemetryService
 } from '../../../diagnostic-data/src/lib/services/telemetry/kusto-telemetry.service';
 import {
+  AppInsightsTelemetryService
+} from '../../../diagnostic-data/src/lib/services/telemetry/appinsights-telemetry.service';
+import {
   UnhandledExceptionHandlerService
 } from '../../../diagnostic-data/src/lib/services/unhandled-exception-handler.service';
 import { environment } from '../environments/environment';
@@ -26,6 +29,7 @@ import { GenericCommsService } from './shared/services/generic-comms.service';
 import { GenericSolutionService } from './shared/services/generic-solution.service';
 import { LocalBackendService } from './shared/services/local-backend.service';
 import { PortalKustoTelemetryService } from './shared/services/portal-kusto-telemetry.service';
+import { PortalAppInsightsTelemetryService } from './shared/services/portal-appinsights-telemetry.service';
 import { SharedModule } from './shared/shared.module';
 import { ContentService } from './shared-v2/services/content.service';
 import { CategoryChatStateService } from './shared-v2/services/category-chat-state.service';
@@ -85,6 +89,7 @@ import { GenieModule } from './genie/genie.module';
   providers: [
     CustomReuseStrategy,
     { provide: KustoTelemetryService, useExisting: PortalKustoTelemetryService },
+    { provide: AppInsightsTelemetryService, useExisting: PortalAppInsightsTelemetryService},
     { provide: RouteReuseStrategy, useExisting: CustomReuseStrategy },
     {
       provide: DiagnosticService,

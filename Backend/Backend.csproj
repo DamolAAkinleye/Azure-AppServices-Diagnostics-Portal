@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <ApplicationInsightsResourceId>/subscriptions/c1972e9d-b3c7-4de4-acb3-681773b28ced/resourcegroups/DiagnoseAndSolve/providers/microsoft.insights/components/DiagnoseAndSolve</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>

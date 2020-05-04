@@ -45,7 +45,6 @@
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>ca.ruleset</CodeAnalysisRuleSet>
-    <ApplicationInsightsResourceId>/subscriptions/c1972e9d-b3c7-4de4-acb3-681773b28ced/resourceGroups/DiagnoseAndSolve/providers/microsoft.insights/components/DiagnoseAndSolve</ApplicationInsightsResourceId>
   </PropertyGroup>
   
   <ItemGroup>
