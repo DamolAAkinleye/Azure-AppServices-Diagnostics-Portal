@@ -121,38 +121,38 @@ export class TelemetryService {
 
     private findProductName(url: string): string {
         let productName = "";
-        const routeParams = this._activatedRoute.root.firstChild.firstChild.firstChild.snapshot.params;
-        const resourceName = this.isPublic ? routeParams['resourcename'] : routeParams['resourceName'];
+        // const routeParams = this._activatedRoute.root.firstChild.firstChild.firstChild.snapshot.params;
+        // const resourceName = this.isPublic ? routeParams['resourcename'] : routeParams['resourceName'];
         
-        //match substring which is after "providers/" and before "/:resourceName",like "microsoft.web/sites"
-        const re = new RegExp(`(?<=providers\/).*(?=\/${resourceName})`);
-        const matched = url.match(re);
+        // //match substring which is after "providers/" and before "/:resourceName",like "microsoft.web/sites"
+        // const re = new RegExp(`(?<=providers\/).*(?=\/${resourceName})`);
+        // const matched = url.match(re);
         
-        if (!matched || matched.length <= 0 || matched[0].length <= 0) {
-            return "";
-        }
+        // if (!matched || matched.length <= 0 || matched[0].length <= 0) {
+        //     return "";
+        // }
 
-        const type = matched[0];
-        const resourceType = this.enabledResourceTypes.find(t => t.resourceType.toLowerCase() === type.toLowerCase());
-        productName = resourceType ? resourceType.name : type;
+        // const type = matched[0];
+        // const resourceType = this.enabledResourceTypes.find(t => t.resourceType.toLowerCase() === type.toLowerCase());
+        // productName = resourceType ? resourceType.name : type;
 
-        //If it's a web app, Check the kind of web app(Function/Linux)
-        //If it's not Function/Linux, keep productNamse as it is
-        if (type.toLowerCase() === "microsoft.web/sites") {
-            if (!this._diagnosticSiteService.currentSite.value || !this._diagnosticSiteService.currentSite.value.kind) {
-                return productName;
-            }
-            const kind = this._diagnosticSiteService.currentSite.value.kind;
+        // //If it's a web app, Check the kind of web app(Function/Linux)
+        // //If it's not Function/Linux, keep productNamse as it is
+        // if (type.toLowerCase() === "microsoft.web/sites") {
+        //     if (!this._diagnosticSiteService.currentSite.value || !this._diagnosticSiteService.currentSite.value.kind) {
+        //         return productName;
+        //     }
+        //     const kind = this._diagnosticSiteService.currentSite.value.kind;
 
-            if (kind.indexOf('linux') >= 0 && kind.indexOf('functionapp') >= 0) {
-                productName = "Azure Linux Function App";
-            }
-            else if (kind.indexOf('linux') >= 0) {
-                productName = "Azure Linux App";
-            }else if (kind.indexOf('functionapp') >= 0) {
-                productName = "Azure Function App";
-            }
-        }
+        //     if (kind.indexOf('linux') >= 0 && kind.indexOf('functionapp') >= 0) {
+        //         productName = "Azure Linux Function App";
+        //     }
+        //     else if (kind.indexOf('linux') >= 0) {
+        //         productName = "Azure Linux App";
+        //     }else if (kind.indexOf('functionapp') >= 0) {
+        //         productName = "Azure Function App";
+        //     }
+        // }
         
         return productName;
     }
