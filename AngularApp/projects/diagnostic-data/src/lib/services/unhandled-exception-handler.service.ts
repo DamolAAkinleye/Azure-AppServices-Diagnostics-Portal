@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { SeverityLevel } from '../models/telemetry';
-import { TelemetryService } from './telemetry/telemetry.service';
+import { KustoTelemetryService } from './telemetry/kusto-telemetry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ export class UnhandledExceptionHandlerService {
 
     router: Router;
 
-    constructor(private logService: TelemetryService, private injector: Injector) { }
+    constructor(private logService: KustoTelemetryService, private injector: Injector) { }
 
     handleError(error: Error) {
         try {
