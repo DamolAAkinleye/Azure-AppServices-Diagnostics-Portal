@@ -33,34 +33,5 @@ namespace Backend.Controllers
 
             return Ok(config[name]);
         }
-
-        [HttpGet("environmentVariable/{name}")]
-        public IActionResult GetEnvironmentVariable(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                return BadRequest("Environment variable name is empty");
-            }
-
-            return Ok(Environment.GetEnvironmentVariable(name));
-        }
-
-        [HttpGet("environment/configurations")]
-        public IActionResult GetEnvironmentConfiguration()
-        {
-            IDictionary<string, string> environmentConfiguration = new Dictionary<string, string>
-            {
-                { "environment", Environment.GetEnvironmentVariable("ADS_ENVIRONMENT") },
-                { "websiteHostName",  Environment.GetEnvironmentVariable("ADS_HOST") }
-            };
-
-            if (env.IsDevelopment())
-            {
-                environmentConfiguration["environment"] = "local";
-                environmentConfiguration["websiteHostName"] = "ads";
-            }
-
-            return Ok(environmentConfiguration);
-        }
     }
 }

@@ -86,35 +86,6 @@ namespace AppLensV3.Controllers
             return Ok(config[name]);
         }
 
-        [HttpGet("environmentVariable/{name}")]
-        public IActionResult GetEnvironmentVariable(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                return BadRequest("Environment variable name is empty");
-            }
-
-            return Ok(Environment.GetEnvironmentVariable(name));
-        }
-
-        [HttpGet("environment/configurations")]
-        public IActionResult GetEnvironmentConfiguration()
-        {
-            IDictionary<string, string> environmentConfiguration = new Dictionary<string, string>()
-            {
-                { "environment", Environment.GetEnvironmentVariable("APPLENS_ENVIRONMENT") },
-                { "websiteHostName",  Environment.GetEnvironmentVariable("APPLENS_HOST") }
-            };
-
-            if (Env.IsDevelopment())
-            {
-                environmentConfiguration["environment"] = "local";
-                environmentConfiguration["websiteHostName"] = "applens";
-            }
-
-            return Ok(environmentConfiguration);
-        }
-
         private static string TryGetHeader(HttpRequest request, string headerName, string defaultValue = "") =>
             request.Headers.ContainsKey(headerName) ? (string)request.Headers[headerName] : defaultValue;
 

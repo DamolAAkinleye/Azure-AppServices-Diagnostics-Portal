@@ -20,16 +20,21 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
             retry(2)
         );
 
-        const envConfigRequest = this._backendCtrlService.get<any>('api/environment/configurations').pipe(
-            map((config) => {
-                const configuration = JSON.parse(config);
-                this.environment = configuration["environment"];
-                this.websiteHostName = configuration["websiteHostName"];
+        const envConfigRequest = this._backendCtrlService.get<string>('api/appsettings/ASD_ENVIRONMENT').pipe(
+            map((value: string) => {
+                this.environment = value
             }),
             retry(2)
         );
 
-        forkJoin(appInsightsRequest, envConfigRequest).subscribe(() => {
+        const hostnameConfigRequest = this._backendCtrlService.get<string>(`api/appsettings/ASD_HOST`).pipe(
+            map((value: string) => {
+            this.websiteHostName = value;
+            }),
+            retry(2)
+        );
+
+        forkJoin(appInsightsRequest, envConfigRequest, hostnameConfigRequest).subscribe(() => {
             const snippet: Snippet = {
                 config: {
                     instrumentationKey: this.instrumentationKey,
@@ -47,6 +52,7 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
             this.appInsights.addTelemetryInitializer((envelop: ITelemetryItem) => {
                 envelop.data["environment"] = this.environment;
                 envelop.data["websiteHostName"] = this.websiteHostName;
+                envelop.data["isfrontend"] = true;
             });
         });
     }
