@@ -20,7 +20,7 @@ export class ApplensAppinsightsTelemetryService implements ITelemetryProvider {
       retry(2)
     );
 
-    const envConfigRequest = this._backendApi.get<any>('api/environment/APPLENS_ENVIRONMENT').pipe(
+    const envConfigRequest = this._backendApi.get<any>('api/appsettings/APPLENS_ENVIRONMENT').pipe(
       map((value: string) => {
         this.environment = value;
       }),

@@ -1,4 +1,4 @@
-import { DetectorControlService, FeatureNavigationService, DetectorResponse } from 'diagnostic-data';
+import { DetectorControlService, FeatureNavigationService, DetectorResponse, TelemetryEventNames } from 'diagnostic-data';
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Category } from '../../../shared-v2/models/category';
@@ -57,7 +57,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     constructor(private _resourceService: ResourceService, private _categoryService: CategoryService, private _notificationService: NotificationService, private _router: Router,
         private _detectorControlService: DetectorControlService, private _featureService: FeatureService, private _logger: LoggingV2Service, private _authService: AuthService,
-        private _navigator: FeatureNavigationService, private _activatedRoute: ActivatedRoute, private armService: ArmService, private logService: TelemetryService,
+        private _navigator: FeatureNavigationService, private _activatedRoute: ActivatedRoute, private armService: ArmService, private _telemetryService: TelemetryService,
         private kustologgingService: PortalKustoTelemetryService, private _diagnosticService: DiagnosticService, private _portalService: PortalActionService, private globals: Globals,
         private versionTestService: VersionTestService, private subscriptionPropertiesService: SubscriptionPropertiesService) {
 
@@ -72,7 +72,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             resourceName: this.resourceName,
             intialView: initialViewLoaded,
         };
-        this.logService.logEvent('DiagnosticsViewLoaded',eventProps);
+        this._telemetryService.logEvent('DiagnosticsViewLoaded',eventProps);
 
         if (_resourceService.armResourceConfig && _resourceService.armResourceConfig.homePageText
             && _resourceService.armResourceConfig.homePageText.title && _resourceService.armResourceConfig.homePageText.title.length > 1
@@ -150,7 +150,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             resourceName: this.resourceName,
             switchToView: this.useLegacy.toString(),
         };
-        this.logService.logEvent('SwitchView',eventProps);
+        this._telemetryService.logEvent('SwitchView',eventProps);
     }
 
     ngOnInit() {
@@ -169,7 +169,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
                     subscriptionId: this.subscriptionId,
                     subscriptionLocationPlacementId: locationPlacementId
                 };
-                this.logService.logEvent('SubscriptionProperties', eventProps);
+                this._telemetryService.logEvent('SubscriptionProperties', eventProps);
             }
         });
 
@@ -194,11 +194,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
             this._detectorControlService.setDefault();
         }
 
-        this.logService.logEvent("telemetry service logging", {});
+        this._telemetryService.logEvent("telemetry service logging", {});
         this.kustologgingService.logEvent("kusto telemetry service logging", {});
     };
 
     ngAfterViewInit() {
+        this._telemetryService.logPageView(TelemetryEventNames.HomePageLoaded, {"numCategories": this.categories.length.toString()});
         document.getElementById("healthCheck").focus();
     }
 
