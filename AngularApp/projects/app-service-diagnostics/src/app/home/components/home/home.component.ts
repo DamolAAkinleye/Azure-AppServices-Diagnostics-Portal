@@ -11,7 +11,6 @@ import { HomePageText } from '../../../shared/models/arm/armResourceConfig';
 import { ArmService } from '../../../shared/services/arm.service';
 import { AuthService } from '../../../startup/services/auth.service';
 import { TelemetryService } from 'diagnostic-data';
-import { PortalKustoTelemetryService } from '../../../shared/services/portal-kusto-telemetry.service';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { AppType } from '../../../shared/models/portal';
 import { DiagnosticService } from 'diagnostic-data';
@@ -57,8 +56,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     constructor(private _resourceService: ResourceService, private _categoryService: CategoryService, private _notificationService: NotificationService, private _router: Router,
         private _detectorControlService: DetectorControlService, private _featureService: FeatureService, private _logger: LoggingV2Service, private _authService: AuthService,
-        private _navigator: FeatureNavigationService, private _activatedRoute: ActivatedRoute, private armService: ArmService, private _telemetryService: TelemetryService,
-        private kustologgingService: PortalKustoTelemetryService, private _diagnosticService: DiagnosticService, private _portalService: PortalActionService, private globals: Globals,
+        private _navigator: FeatureNavigationService, private _activatedRoute: ActivatedRoute, private armService: ArmService, private _telemetryService: TelemetryService, private _diagnosticService: DiagnosticService, private _portalService: PortalActionService, private globals: Globals,
         private versionTestService: VersionTestService, private subscriptionPropertiesService: SubscriptionPropertiesService) {
 
         this.subscriptionId = this._activatedRoute.snapshot.params['subscriptionid'];
@@ -181,7 +179,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
                         url: this.providerRegisterUrl
 
                     };
-                    this.kustologgingService.logEvent("Change Analysis Resource Provider registered", eventProps);
+                    this._telemetryService.logEvent("Change Analysis Resource Provider registered", eventProps);
                 }, (error: any) => {
                     this.logHTTPError(error, 'registerResourceProvider');
                 });
@@ -195,7 +193,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
         }
 
         this._telemetryService.logEvent("telemetry service logging", {});
-        this.kustologgingService.logEvent("kusto telemetry service logging", {});
     };
 
     ngAfterViewInit() {
@@ -273,7 +270,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             errorMsg: error.message ? error.message : 'Server Error',
             statusCode: error.status ? error.status : 500
         };
-        this.kustologgingService.logTrace('HTTP error in ' + methodName, errorLoggingProps);
+        this._telemetryService.logTrace('HTTP error in ' + methodName, errorLoggingProps);
     }
 
     openAvaAndPerf() {

@@ -12,49 +12,55 @@ export class ApplensAppinsightsTelemetryService implements ITelemetryProvider {
   environment: string = "";
   websiteHostName: string = "";
 
-  constructor(private _backendApi: DiagnosticApiService) {
-    const appInsightsRequest = this._backendApi.get<string>(`api/appsettings/ApplicationInsights:InstrumentationKey`).pipe(
-      map((value: string) => {
-        this.instrumentationKey = value;
-      }),
-      retry(2)
-    );
+  constructor(private _backendApi: DiagnosticApiService) { }
 
-    const envConfigRequest = this._backendApi.get<any>('api/appsettings/APPLENS_ENVIRONMENT').pipe(
-      map((value: string) => {
-        this.environment = value;
-      }),
-      retry(2)
-    );
+  public initialize() {
+    if (!this.appInsights) {
+      const appInsightsRequest = this._backendApi.get<string>(`api/appsettings/ApplicationInsights:InstrumentationKey`).pipe(
+        map((value: string) => {
+          this.instrumentationKey = value;
+        }),
+        retry(2)
+      );
 
-    const hostnameConfigRequest = this._backendApi.get<string>(`api/appsettings/APPLENS_HOST`).pipe(
-      map((value: string) => {
-        this.websiteHostName = value;
-      }),
-      retry(2)
-    );
+      const envConfigRequest = this._backendApi.get<string>('api/appsettings/APPLENS_ENVIRONMENT').pipe(
+        map((value: string) => {
+          this.environment = value;
+        }),
+        retry(2)
+      );
 
-    forkJoin(appInsightsRequest, envConfigRequest, hostnameConfigRequest).subscribe(() => {
-      const snippet: Snippet = {
-        config: {
-          instrumentationKey: this.instrumentationKey,
-          disableFetchTracking: false,
-          maxAjaxCallsPerView: -1,
-          enableAutoRouteTracking: true,
-          maxBatchSizeInBytes: 5,
-          maxBatchInterval: 1,
-        }
-      };
+      const hostnameConfigRequest = this._backendApi.get<string>(`api/appsettings/APPLENS_HOST`).pipe(
+        map((value: string) => {
+          this.websiteHostName = value;
+        }),
+        retry(2)
+      );
 
-      this.appInsights = new ApplicationInsights(snippet);
-      this.appInsights.loadAppInsights();
+      forkJoin(appInsightsRequest, envConfigRequest, hostnameConfigRequest).subscribe(() => {
+        const snippet: Snippet = {
+          config: {
+            instrumentationKey: this.instrumentationKey,
+            disableFetchTracking: false,
+            maxAjaxCallsPerView: -1,
+            enableAutoRouteTracking: true,
+            maxBatchSizeInBytes: 5,
+            maxBatchInterval: 1,
+          }
+        };
 
-      this.appInsights.addTelemetryInitializer((envelop: ITelemetryItem) => {
-        envelop.data["environment"] = this.environment;
-        envelop.data["websiteHostName"] = this.websiteHostName;
-        envelop.data["isfrontend"] = true;
+        this.appInsights = new ApplicationInsights(snippet);
+        this.appInsights.loadAppInsights();
+
+        this.appInsights.addTelemetryInitializer((envelop: ITelemetryItem) => {
+          envelop.data["environment"] = this.environment ? this.environment : "test";
+          envelop.data["websiteHostName"] = this.websiteHostName ? this.websiteHostName : "applens";
+          envelop.data["isfrontend"] = true;
+        });
+
+        this.logEvent("Application Insights initialized for applens client");
       });
-    });
+    }
   }
 
   public logPageView(name?: string, url?: string, properties?: any, duration?: number) {
@@ -66,7 +72,9 @@ export class ApplensAppinsightsTelemetryService implements ITelemetryProvider {
       uri: url,
       properties: properties,
     };
-    this.appInsights.trackPageView(pageViewTelemetry);
+    if (this.appInsights) {
+      this.appInsights.trackPageView(pageViewTelemetry);
+    }
   }
 
   public logEvent(message?: string, properties?: any, measurements?: any) {
@@ -84,7 +92,6 @@ export class ApplensAppinsightsTelemetryService implements ITelemetryProvider {
   public logException(exception: Error, handledAt?: string, properties?: any, severityLevel?: SeverityLevel) {
     const mergedProperties = { handledAt: handledAt, ...properties };
     const exceptionTelemetry = { exception, severityLevel, mergedProperties } as IExceptionTelemetry;
-
 
     if (this.appInsights) {
       this.appInsights.trackException(exceptionTelemetry);

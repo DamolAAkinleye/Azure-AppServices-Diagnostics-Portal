@@ -115,8 +115,6 @@ export const Routes = RouterModule.forRoot([
   ],
   imports: [
     AngularReactBrowserModule,
-    // FabButtonModule,
-    // FabDialogModule,
     BrowserAnimationsModule,
     HttpClientModule,
     DiagnosticDataModule.forRoot(),

@@ -1,16 +1,18 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, ErrorHandler } from '@angular/core';
 import { Router } from '@angular/router';
 import { SeverityLevel } from '../models/telemetry';
-import { KustoTelemetryService } from './telemetry/kusto-telemetry.service';
+import { TelemetryService } from './telemetry/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class UnhandledExceptionHandlerService {
+export class UnhandledExceptionHandlerService extends ErrorHandler{
 
     router: Router;
 
-    constructor(private logService: KustoTelemetryService, private injector: Injector) { }
+    constructor(private logService: TelemetryService, private injector: Injector) { 
+        super();
+    }
 
     handleError(error: Error) {
         try {
