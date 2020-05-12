@@ -2,10 +2,11 @@ import { Injectable, OnInit, Inject, Input } from '@angular/core';
 import { ApplicationInsights, Snippet, IPageViewTelemetry, IEventTelemetry, IExceptionTelemetry, SeverityLevel, ITraceTelemetry, IMetricTelemetry, ITelemetryItem } from '@microsoft/applicationinsights-web'
 import { ITelemetryProvider } from 'diagnostic-data';
 import { BackendCtrlService } from './backend-ctrl.service';
-import { of, forkJoin } from 'rxjs';
 import { map, retry, catchError } from 'rxjs/operators';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root',
+})
 export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
     appInsights: ApplicationInsights;
     instrumentationKey: string;
@@ -15,46 +16,51 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
     constructor(private _backendCtrlService: BackendCtrlService) {
         const appInsightsRequest = this._backendCtrlService.get<string>(`api/appsettings/ApplicationInsights:InstrumentationKey`).pipe(
             map((value: string) => {
-            this.instrumentationKey = value;
+                this.instrumentationKey = value;
             }),
             retry(2)
         );
 
         const envConfigRequest = this._backendCtrlService.get<string>('api/appsettings/ASD_ENVIRONMENT').pipe(
             map((value: string) => {
-                this.environment = value
+                this.environment = value;
             }),
             retry(2)
         );
 
         const hostnameConfigRequest = this._backendCtrlService.get<string>(`api/appsettings/ASD_HOST`).pipe(
             map((value: string) => {
-            this.websiteHostName = value;
+                this.websiteHostName = value;
             }),
             retry(2)
         );
 
-        forkJoin(appInsightsRequest, envConfigRequest, hostnameConfigRequest).subscribe(() => {
-            const snippet: Snippet = {
-                config: {
-                    instrumentationKey: this.instrumentationKey,
-                    disableFetchTracking: false,
-                    maxAjaxCallsPerView: -1,
-                    enableAutoRouteTracking: true,
-                    maxBatchSizeInBytes: 5,
-                    maxBatchInterval: 1,
-                }
-            };
+        appInsightsRequest.subscribe(() => {
+            envConfigRequest.subscribe(() => {
+                hostnameConfigRequest.subscribe(() => {
+                    const snippet: Snippet = {
+                        config: {
+                            instrumentationKey: this.instrumentationKey,
+                            disableFetchTracking: false,
+                            maxAjaxCallsPerView: -1,
+                            enableAutoRouteTracking: true,
+                            maxBatchSizeInBytes: 5,
+                            maxBatchInterval: 1,
+                        }
+                    };
+                    
+                    this.appInsights = new ApplicationInsights(snippet);
+                    this.appInsights.loadAppInsights();
+                    this.appInsights.addTelemetryInitializer((envelop: ITelemetryItem) => {
+                        envelop.data["environment"] = this.environment ? this.environment : "test";
+                        envelop.data["websiteHostName"] = this.websiteHostName ? this.websiteHostName : "appservice-diagnostics";
+                        envelop.data["isfrontend"] = true;
+                    });
 
-            this.appInsights = new ApplicationInsights(snippet);
-            this.appInsights.loadAppInsights();
-
-            this.appInsights.addTelemetryInitializer((envelop: ITelemetryItem) => {
-                envelop.data["environment"] = this.environment;
-                envelop.data["websiteHostName"] = this.websiteHostName;
-                envelop.data["isfrontend"] = true;
-            });
-        });
+                    this.logEvent("Application Insights initialized for diagnostics client");    
+                })
+            })
+        })
     }
 
     public logPageView(name?: string, url?: string, properties?: any, duration?: number) {
@@ -66,7 +72,9 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
             uri: url,
             properties: properties,
         };
-        this.appInsights.trackPageView(pageViewTelemetry);
+        if (this.appInsights) {
+            this.appInsights.trackPageView(pageViewTelemetry);
+        }
     }
 
     public logEvent(message?: string, properties?: any, measurements?: any) {
@@ -84,7 +92,6 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
     public logException(exception: Error, handledAt?: string, properties?: any, severityLevel?: SeverityLevel) {
         const mergedProperties = { handledAt: handledAt, ...properties };
         const exceptionTelemetry = { exception, severityLevel, mergedProperties } as IExceptionTelemetry;
-
 
         if (this.appInsights) {
             this.appInsights.trackException(exceptionTelemetry);

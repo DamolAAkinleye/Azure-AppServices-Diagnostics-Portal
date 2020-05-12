@@ -3,8 +3,8 @@ import { AdalService } from 'adal-angular4';
 import {AadAuthGuard} from './shared/auth/aad-auth-guard.service';
 import { environment } from '../environments/environment';
 import * as Highcharts from 'highcharts';
-import { DialogType } from 'office-ui-fabric-react/lib/Dialog';
 import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
+import { ApplensAppinsightsTelemetryService } from './shared/services/applens-appinsights-telemetry.service';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +15,7 @@ export class AppComponent implements OnInit{
 
   env = environment;
   showBanner = true;
-  constructor(private _adalService: AdalService, public _authGuardService: AadAuthGuard) {
+  constructor(private _adalService: AdalService, public _authGuardService: AadAuthGuard, private _applensAppinsightsTelemetryService: ApplensAppinsightsTelemetryService) {
     if (environment.adal.enabled){
       this._adalService.init({
         clientId: environment.adal.clientId,
@@ -26,9 +26,11 @@ export class AppComponent implements OnInit{
        });
     }
   }
+
   ngOnInit() {
     initializeIcons('https://static2.sharepointonline.com/files/fabric/assets/icons/');
   }
+
   hideBanner(){
     this.showBanner = false;
   }
