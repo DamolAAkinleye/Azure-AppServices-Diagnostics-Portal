@@ -21,8 +21,10 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "lib": "ng build diagnostic-data --watch",
+    "generate-report1": "node --max_old_space_size=8192 node_modules/@angular/cli/bin/ng build app-service-diagnostics --prod",
     "generate-report": "ng build app-service-diagnostics --prod",
-    "bundle-report": "webpack-bundle-analyzer ../Backend/wwwroot/stats.json -p 8889"
+    "bundle-report": "webpack-bundle-analyzer ../Backend/wwwroot/stats.json -p 8889",
+    "postbuild": "mkdir dist/sourceMapInspector/sourceMaps; mv dist/sourceMapInspector/*.map dist/sourceMapInspector/sourceMaps"
   },
   "dependencies": {
     "@angular-react/core": "1.0.1",

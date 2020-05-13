@@ -20,4 +20,6 @@ steps:
     npm install -g @angular/cli@8.0.2
     npm install
     npm run build
+    npm run generate-report1
+    npm run postbuild
   displayName: 'npm install and build'
