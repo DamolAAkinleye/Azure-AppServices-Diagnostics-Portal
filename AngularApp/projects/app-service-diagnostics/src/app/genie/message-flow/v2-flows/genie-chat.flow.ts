@@ -41,7 +41,7 @@ export class GenieChatFlow extends IMessageFlowProvider {
    helpfulGroup.messages.push(new TextMessage('Yes', MessageSender.User, 200));
    helpfulGroup.messages.push(new TextMessage('Good to hear! Could you let us know how helpful was this?', MessageSender.System, 500));
    helpfulGroup.messages.push(new GenieFeedbackMessage([], 'Submit', 'Feedback', 'Support Home'));
-   helpfulGroup.messages.push(new TextMessage('Thank you for your feedback! What else can I help you with today? Type in your question below.'));
+   helpfulGroup.messages.push(new TextMessage('Thank you so much for your feedback! If you need more help, type in your question below. Otherwise, exit the session by using the close button in the top right corner.'));
 
    const notHelpfulGroup: MessageGroup = new MessageGroup('feedback-not-helpful', [], () => 'feedback-textbox');
    notHelpfulGroup.messages.push(new TextMessage('No', MessageSender.User, 200));
