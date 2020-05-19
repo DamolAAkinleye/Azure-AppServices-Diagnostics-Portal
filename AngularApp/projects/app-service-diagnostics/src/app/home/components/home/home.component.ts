@@ -27,8 +27,7 @@ import { SubscriptionPropertiesService } from '../../../shared/services/subscrip
 })
 export class HomeComponent implements OnInit, AfterViewInit {
     useLegacy: boolean = true;
-    isWindowsWebApp: boolean = true;
-    isExternalSub: boolean = true;
+    initializedPortalVersion: string = "v2";
     resourceName: string;
     categories: Category[];
     searchValue = '';
@@ -60,15 +59,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
         private versionTestService: VersionTestService, private subscriptionPropertiesService: SubscriptionPropertiesService) {
 
         this.subscriptionId = this._activatedRoute.snapshot.params['subscriptionid'];
-        this.isExternalSub = this.versionTestService.isExternalSub;
         this.versionTestService.isLegacySub.subscribe(isLegacy => this.useLegacy = isLegacy);
-        this.versionTestService.isWindowsWebApp.subscribe(isWebAppResource => this.isWindowsWebApp = isWebAppResource);
-        
-        let initialViewLoaded = this.isWindowsWebApp && !this.isExternalSub ? "new" : "old";
+
+        this.versionTestService.initializedPortalVersion.subscribe(version => this.initializedPortalVersion = version); 
         let eventProps = {
             subscriptionId: this.subscriptionId,
             resourceName: this.resourceName,
-            intialView: initialViewLoaded,
+            intialView: this.initializedPortalVersion,
         };
         this._telemetryService.logEvent('DiagnosticsViewLoaded',eventProps);
 
@@ -103,7 +100,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
                 }
                 else {
                     this.homePageText = {
-                        title: 'App Service Diagnostics',
+                        title: 'App Service Diagnostics (Preview)',
                         description: 'Use App Service Diagnostics to investigate how your app is performing, diagnose issues, and discover how to\
             improve your application. Select the problem category that best matches the information or tool that you\'re\
             interested in:',
@@ -197,7 +194,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit() {
         this._telemetryService.logPageView(TelemetryEventNames.HomePageLoaded, {"numCategories": this.categories.length.toString()});
-        document.getElementById("healthCheck").focus();
+        if (document.getElementById("healthCheck"))
+        {
+            document.getElementById("healthCheck").focus();
+        }
     }
 
    

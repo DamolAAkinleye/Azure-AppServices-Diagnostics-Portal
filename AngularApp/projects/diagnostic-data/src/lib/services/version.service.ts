@@ -6,5 +6,6 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class VersionService {
   public isLegacySub: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  public initializedPortalVersion: BehaviorSubject<string> = new BehaviorSubject<string>("v2");
   constructor() { }
 }

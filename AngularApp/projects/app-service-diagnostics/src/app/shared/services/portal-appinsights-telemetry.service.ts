@@ -46,6 +46,7 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
                             enableAutoRouteTracking: true,
                             maxBatchSizeInBytes: 5,
                             maxBatchInterval: 1,
+                            autoTrackPageVisitTime: true,
                         }
                     };
                     

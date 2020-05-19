@@ -15,6 +15,7 @@ export class TelemetryService {
     eventPropertiesSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
     private eventPropertiesLocalCopy: { [name: string]: string } = {};
     private isLegacy: boolean;
+    private initializedPortalVersion: string = "v2";
     private isPublic:boolean;
     private enabledResourceTypes: { resourceType: string, name: string }[] = [
         {
@@ -62,6 +63,7 @@ export class TelemetryService {
             }
         });
         this._versionService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy);
+        this._versionService.initializedPortalVersion.subscribe(initializedVersion => this.initializedPortalVersion = initializedVersion);
     }
 
     /**
@@ -79,6 +81,7 @@ export class TelemetryService {
             properties.Url = window.location.href;
         }
 
+        properties.initializedPortalVersion = this.initializedPortalVersion;
         properties.PortalVersion = this.isLegacy ? 'V2' : 'V3';
 
         let productName = "";
