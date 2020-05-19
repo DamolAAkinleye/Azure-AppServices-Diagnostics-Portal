@@ -65,7 +65,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
         let eventProps = {
             subscriptionId: this.subscriptionId,
             resourceName: this.resourceName,
-            intialView: this.initializedPortalVersion,
         };
         this._telemetryService.logEvent('DiagnosticsViewLoaded',eventProps);
 
