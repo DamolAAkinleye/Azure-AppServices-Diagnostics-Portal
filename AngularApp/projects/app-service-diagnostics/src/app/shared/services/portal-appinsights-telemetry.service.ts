@@ -60,8 +60,7 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
 
                         try {
                             const isLegacy = this._versionTestService.isLegacySub.value;
-                            envelop.data["portalVersion"] = isLegacy ? 'V2' : 'V3';
-                            const isWindowsApp = this._versionTestService.isWindowsWebApp.value;
+                            envelop.data["portalVersion"] = isLegacy ? 'v2' : 'v3';
                             envelop.data["initalPortalVersion"] = this._versionTestService.initializedPortalVersion.value;
                         }catch(e) {
                             this.logException(e);

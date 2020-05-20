@@ -77,7 +77,7 @@ export class TelemetryService {
                 }
             }
         }
-        this.addCommonAttriToLog(properties);
+        this.addCommonLoggingProperties(properties);
 
         for (const telemetryProvider of this.telemetryProviders) {
             if(telemetryProvider) {
@@ -87,7 +87,7 @@ export class TelemetryService {
     }
 
     public logPageView(name: string, properties?: any, measurements?: any, url?: string, duration?: number) {
-        this.addCommonAttriToLog(properties);
+        this.addCommonLoggingProperties(properties);
         for (const telemetryProvider of this.telemetryProviders) {
             if (!url) {
                 url = window.location.href;
@@ -99,7 +99,7 @@ export class TelemetryService {
     }
 
     public logException(exception: Error, handledAt?: string, properties?: any, severityLevel?: SeverityLevel) {
-        this.addCommonAttriToLog(properties);
+        this.addCommonLoggingProperties(properties);
         for (const telemetryProvider of this.telemetryProviders) {
             if (telemetryProvider) {
                 telemetryProvider.logException(exception, handledAt, properties, severityLevel);
@@ -108,7 +108,7 @@ export class TelemetryService {
     }
 
     public logTrace(message: string, properties?: any, severityLevel?: any) {
-        this.addCommonAttriToLog(properties);
+        this.addCommonLoggingProperties(properties);
         for (const telemetryProvider of this.telemetryProviders) {
             if(telemetryProvider){
                 telemetryProvider.logTrace(message, properties, severityLevel);
@@ -117,7 +117,7 @@ export class TelemetryService {
     }
 
     public logMetric(name: string, average: number, sampleCount?: number, min?: number, max?: number, properties?: any) {
-        this.addCommonAttriToLog(properties);
+        this.addCommonLoggingProperties(properties);
         for (const telemetryProvider of this.telemetryProviders) {
             if(telemetryProvider){
                 telemetryProvider.logMetric(name, average, sampleCount, min, max, properties);
@@ -145,7 +145,7 @@ export class TelemetryService {
             }
             type = `${s[1]}/${s[2]}`;
         }catch(e) {
-            this.logException(e);
+            
         }
         const resourceType = this.enabledResourceTypes.find(t => t.resourceType.toLowerCase() === type.toLowerCase());
         productName = resourceType ? resourceType.name : type;
@@ -171,12 +171,11 @@ export class TelemetryService {
         return productName;
     }
 
-    private addCommonAttriToLog(properties: { [name: string]: string }):void {
+    private addCommonLoggingProperties(properties: { [name: string]: string }):void {
         properties = properties || {};
-
-        properties["portalVersion"] = this.isLegacy ? 'V2' : 'V3';
+        properties["portalVersion"] = this.isLegacy ? 'v2' : 'v3';
         if (!(properties["url"] || properties["Url"])) {
-            properties.Url = this._router.url;
+            properties["url"] = this._router.url;
         }
 
         let productName = "";
