@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PanelType } from 'office-ui-fabric-react';
-import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 import { Globals } from '../../../globals';
 import { SiteDaasInfo } from '../../../shared/models/solution-metadata';
-import { SiteFeatureService } from '../../../resources/web-sites/services/site-feature.service';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { SiteService } from '../../../shared/services/site.service';
 
@@ -18,7 +16,7 @@ export class DiagosticSessionsPanelComponent implements OnInit {
   type: PanelType = PanelType.custom;
   width: string = "850px";
 
-  constructor(private _sitesFeatureService: SiteFeatureService, public webSiteService: WebSitesService, private _siteService: SiteService, protected telemetryService: TelemetryService, public globals: Globals) {
+  constructor(public webSiteService: WebSitesService, private _siteService: SiteService, public globals: Globals) {
     this._siteService.getSiteDaasInfoFromSiteMetadata().subscribe(site => {
       this.siteToBeDiagnosed = site;
     });

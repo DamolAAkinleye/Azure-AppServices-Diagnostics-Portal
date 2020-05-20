@@ -7,9 +7,9 @@ import { SiteDaasInfo } from '../../models/solution-metadata';
 import { Subscription, Observable, interval } from 'rxjs';
 import { retry } from 'rxjs/operators';
 import { FormatHelper } from '../../utilities/formattingHelper';
-import { VersionTestService } from '../../../fabric-ui/version-test.service';
 import { ActivatedRoute } from '@angular/router';
 import { Globals } from '../../../globals';
+import { TelemetryService } from 'diagnostic-data';
 
 @Component({
     selector: 'daas-sessions',
@@ -36,7 +36,7 @@ export class DaasSessionsComponent implements OnChanges, OnDestroy {
     allSessions: string = '../../diagnosticTools';
     subscription: Subscription;
 
-    constructor(private _windowService: WindowService, private _serverFarmService: ServerFarmDataService, private _daasService: DaasService, protected _route: ActivatedRoute, public globals: Globals) {
+    constructor(private _windowService: WindowService, private _serverFarmService: ServerFarmDataService, private _daasService: DaasService, protected _route: ActivatedRoute, public globals: Globals, public telemetryService: TelemetryService) {
         this._serverFarmService.siteServerFarm.subscribe(serverFarm => {
             if (serverFarm) {
                 if (serverFarm.sku.tier === 'Standard' || serverFarm.sku.tier === 'Basic' || serverFarm.sku.tier.indexOf('Premium') > -1) {
@@ -208,6 +208,8 @@ export class DaasSessionsComponent implements OnChanges, OnDestroy {
 
     toggleSessionPanel() {
         this.globals.openSessionPanel=!this.globals.openSessionPanel;
+        this.telemetryService.logEvent("OpenSesssionsPanel");
+        this.telemetryService.logPageView("SessionsPanelView");
     }
 }
 
