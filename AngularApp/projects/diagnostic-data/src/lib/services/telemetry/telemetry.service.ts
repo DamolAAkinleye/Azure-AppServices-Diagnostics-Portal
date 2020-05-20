@@ -77,48 +77,51 @@ export class TelemetryService {
                 }
             }
         }
-        if (!(properties["url"] || properties["Url"])) {
-            properties.Url = window.location.href;
-        }
-
-        properties.initializedPortalVersion = this.initializedPortalVersion;
-        properties.PortalVersion = this.isLegacy ? 'V2' : 'V3';
-
-        let productName = "";
-        productName = this.findProductName(this._router.url);
-        if (productName !== "") {
-            properties.productName = productName;
-        }
+        this.addCommonAttriToLog(properties);
 
         for (const telemetryProvider of this.telemetryProviders) {
-            telemetryProvider.logEvent(eventMessage, properties, measurements);
+            if(telemetryProvider) {
+                telemetryProvider.logEvent(eventMessage, properties, measurements);
+            }
         }
     }
 
     public logPageView(name: string, properties?: any, measurements?: any, url?: string, duration?: number) {
+        this.addCommonAttriToLog(properties);
         for (const telemetryProvider of this.telemetryProviders) {
             if (!url) {
                 url = window.location.href;
             }
-            telemetryProvider.logPageView(name, url, properties, measurements, duration);
+            if(telemetryProvider) {
+                telemetryProvider.logPageView(name, url, properties, measurements, duration);
+            }
         }
     }
 
     public logException(exception: Error, handledAt?: string, properties?: any, severityLevel?: SeverityLevel) {
+        this.addCommonAttriToLog(properties);
         for (const telemetryProvider of this.telemetryProviders) {
-            telemetryProvider.logException(exception, handledAt, properties, severityLevel);
+            if (telemetryProvider) {
+                telemetryProvider.logException(exception, handledAt, properties, severityLevel);
+            }
         }
     }
 
     public logTrace(message: string, properties?: any, severityLevel?: any) {
+        this.addCommonAttriToLog(properties);
         for (const telemetryProvider of this.telemetryProviders) {
-            telemetryProvider.logTrace(message, properties, severityLevel);
+            if(telemetryProvider){
+                telemetryProvider.logTrace(message, properties, severityLevel);
+            }
         }
     }
 
     public logMetric(name: string, average: number, sampleCount?: number, min?: number, max?: number, properties?: any) {
+        this.addCommonAttriToLog(properties);
         for (const telemetryProvider of this.telemetryProviders) {
-            telemetryProvider.logMetric(name, average, sampleCount, min, max, properties);
+            if(telemetryProvider){
+                telemetryProvider.logMetric(name, average, sampleCount, min, max, properties);
+            }
         }
     }
 
@@ -166,5 +169,20 @@ export class TelemetryService {
         }
         
         return productName;
+    }
+
+    private addCommonAttriToLog(properties: { [name: string]: string }):void {
+        properties = properties || {};
+
+        properties["portalVersion"] = this.isLegacy ? 'V2' : 'V3';
+        if (!(properties["url"] || properties["Url"])) {
+            properties.Url = this._router.url;
+        }
+
+        let productName = "";
+        productName = this.findProductName(this._router.url);
+        if (productName !== "") {
+            properties["productName"] = productName;
+        }
     }
 }

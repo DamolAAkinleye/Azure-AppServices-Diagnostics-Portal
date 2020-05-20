@@ -3,6 +3,7 @@ import { ApplicationInsights, Snippet, IPageViewTelemetry, IEventTelemetry, IExc
 import { ITelemetryProvider } from 'diagnostic-data';
 import { BackendCtrlService } from './backend-ctrl.service';
 import { map, retry, catchError } from 'rxjs/operators';
+import { VersionTestService } from '../../fabric-ui/version-test.service';
 
 @Injectable({
     providedIn: 'root',
@@ -13,7 +14,7 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
     environment: string = "";
     websiteHostName: string = "";
 
-    constructor(private _backendCtrlService: BackendCtrlService) {
+    constructor(private _backendCtrlService: BackendCtrlService,private _versionTestService:VersionTestService) {
         const appInsightsRequest = this._backendCtrlService.get<string>(`api/appsettings/ApplicationInsights:InstrumentationKey`).pipe(
             map((value: string) => {
                 this.instrumentationKey = value;
@@ -56,6 +57,15 @@ export class PortalAppInsightsTelemetryService implements ITelemetryProvider {
                         envelop.data["environment"] = this.environment ? this.environment : "test";
                         envelop.data["websiteHostName"] = this.websiteHostName ? this.websiteHostName : "appservice-diagnostics";
                         envelop.data["isfrontend"] = true;
+
+                        try {
+                            const isLegacy = this._versionTestService.isLegacySub.value;
+                            envelop.data["portalVersion"] = isLegacy ? 'V2' : 'V3';
+                            const isWindowsApp = this._versionTestService.isWindowsWebApp.value;
+                            envelop.data["initalPortalVersion"] = this._versionTestService.initializedPortalVersion.value;
+                        }catch(e) {
+                            this.logException(e);
+                        }
                     });
 
                     this.logEvent("Application Insights initialized for diagnostics client");    
