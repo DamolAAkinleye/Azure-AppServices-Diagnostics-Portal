@@ -16,7 +16,7 @@ export class DiagosticSessionsPanelComponent implements OnInit {
   siteToBeDiagnosed: SiteDaasInfo;
   scmPath: string;
   type: PanelType = PanelType.custom;
-  width: string = "800px";
+  width: string = "850px";
 
   constructor(private _sitesFeatureService: SiteFeatureService, public webSiteService: WebSitesService, private _siteService: SiteService, protected telemetryService: TelemetryService, public globals: Globals) {
     this._siteService.getSiteDaasInfoFromSiteMetadata().subscribe(site => {
